@@ -29,7 +29,7 @@
 
 #--------------make project folders and folder paths----------------------------
 #set your wd here, MAKE SURE ITS SET TO YOUR PROJECT DATA BASE IN SESSION DROPDOWN MENU ABOVE
-wd <- "/Users/user/Desktop/Sea-Lice-Analysis-2021"
+wd <- "C:/Users/LBRY-SVC-Patron/Desktop/Sea-Lice-Analysis-2021"
 setwd(wd)
 getwd()
 folders <- c("Code", "Data", "OutputFigures", "OutputData")
@@ -500,7 +500,7 @@ setwd(wd)
    Ritchieweeklies <- read.csv(paste(base.list[ll,], "WeeklyAbundance", yr, ".csv", sep = "_"))
    ggplot(Ritchieweeklies, aes(Week, mean, fill= Stage)) + 
     geom_bar(stat = 'identity', position = 'dodge')+ labs(x = "Week", y = "Mean Abundance") + 
-    theme_Publication()+ scale_fill_grey(start = 0.8, end = 0.2)+
+    theme_Publication()+ scale_fill_viridis_d(direction = -1, option = "D",begin = 0.3, end = 0.9)+
      ylim(0,6)+
     geom_errorbar(data = Ritchieweeklies,aes(ymin=lci, ymax=uci), position=position_dodge(.9),  width=0.7, size=.3, color ="black")+
     theme(axis.text=element_text(size=14),

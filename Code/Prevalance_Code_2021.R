@@ -1053,13 +1053,16 @@ for (i in 1:nloop) {
        cex.axis = .5)
   
   prevsiteday<-rbind(prevsiteday, siteagg3)
-  
+  library(vtable)
+  st(siteagg3, group = "Group.date",group.long = TRUE, vars = "total.prevalence", title = listofsites[i])
 }
-
+colnames(siteagg3)
 
 legend("bottom", legend = c("chalimus","copepodid", "motile","total"),
        col = c("#B8DE29FF", "#3CBC75FF", "#238A8DFF", "#39558CFF"), cex = 1.5,box.lwd = "o",
        lwd = 1.75, title = "Depth", lty = c(linetype[3],linetype[4],linetype[2],linetype[1]), pch = c(plotchar[3],plotchar[4],plotchar[2],plotchar[1]), ncol=4)
+
+
 
 
 

@@ -76,8 +76,8 @@ library(tidyverse)
 library(readr)
 library(arsenal)
 
-pacman::p_load(tidyverse,nlme,emmans,here)
-pacman::p_load(ggthemes, ggplot2)
+#pacman::p_load(tidyverse,nlme,emmans,here)
+#pacman::p_load(ggthemes, ggplot2)
 
 source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/ggplot_theme_Publication-2.R")
 
@@ -189,22 +189,21 @@ list(unique(sealicedata$location))
 #X#change year to current
 
 
-yr <- "2021"
+
 #subset to adjust for year
 
-sealice.current <- subset(sealicedata, year == yr)
+sealice.current <- sealicedata
 
 length(unique(sealice.current$location))
 
 #adjust for our focus species
-sealice.current <- sealice.current<-data.frame(subset(sealice.current,
-                                                      species == "coho"|species == "chum"|species == "chinook"|
-                                                        species == "sockeye"|species == "pink"))
+sealice.current <- sealice.current<-data.frame(subset(sealice.current, species == "chum"))
 
-
-### END OF SET UP ###
+#yr <- "2021"
+#starting with the first river in the list, 1
+#sealice.current<-subset(sealice.current, year == yr)### END OF SET UP ###
 ### ## ABUNDANCE ESTIMATES ## #####
-
+View(sealice.current)
 #Setting the cap for bootstrapping
 n.boot.b<-1000
 
@@ -218,8 +217,7 @@ n.boot.b<-1000
 #you should replicate this whole code for every location sampled, unless there are not enough samples, rmeber each site needs a min of 30
 base.list <- data.frame(unique(sealice.current$location))
 list(base.list)
-#starting with the first river in the list, 1
-abundance.base<-subset(sealice.current, species == "chum" | species == "coho" | species == "chinook"| species == "sockeye" |species == "salmon")
+abundance.base<-sealice.current
 
 
 # 1
@@ -308,8 +306,8 @@ for(j in 1:nrow(base.list)){
   a.b.prod <- rbind(a.b.prod,abundance.base)
 }
  abundance.base <- a.b.prod # this is redundant but was kept to work with the rest of the code which calls on abundance.base
- 
-#################################################################################################
+
+ #################################################################################################
 
 # 2
 #################################################################################################
@@ -408,9 +406,8 @@ for(j in 1:nrow(base.list)){
   
   
   
-  
+  library(vtable)
   st(abundance.base, group = "year",group.long = TRUE, vars = "sum_all_lice")
-  st(sealicedata, group = "year",group.long = TRUE, vars = "sum_all_lice")
   
   #d. Finding the weekly means for each lice category
   #################################################################################################
@@ -422,11 +419,13 @@ for(j in 1:nrow(base.list)){
                            abundance.base$copsum, abundance.base$chalsum, abundance.base$motsum, abundance.base$sum_all_lice)
   names(weeksitelice)<-paste(c("date", "j.date", "weeklyintvl", "location", "copsum", "chalsum", "motsum", "sum_all_lice"))
   
+  view(weeksitelice)
   # subsetting the dataframe for each site
   
   #d. i. making a loop to focus on one site at a time for weekly mean abundance for each louse stage 
   #################################################################################################
- 
+
+  
    for (ll in 1:nrow(base.list)){
 setwd(wd)
   # the site to focus on.
@@ -521,7 +520,7 @@ setwd(wd)
   }
  
   weeklyliceloctable<-rowcounts.fin
-  View(weeklyliceloctable)
+  view(weeklyliceloctable)
   
   #into a table that has the site name and the date and the means for all lice. 
   
@@ -530,10 +529,9 @@ setwd(wd)
 
   #d. ii. making a final table and plot of weekly mean abundances of each louse stage, for each site
   #################################################################################################
-  
-  
+
   Ritchieweeklies <- na.omit(weeklyliceloctable)
-  
+  class(Ritchieweeklies$Week)
   #ritchie #ggplot attempt 
   Ritchieweeklies <- subset(Ritchieweeklies,select= -c(site))
   
@@ -543,9 +541,12 @@ setwd(wd)
   
   colnames(Ritchieweeklies)[which(names(Ritchieweeklies) == "site")] <- "Site"
   
+library(lubridate)
+  Ritchieweeklies$Week  <-  factor(Ritchieweeklies$Week)
+  library(reshape2)
+
   
-    library(reshape2)
-  Ritchieweeklies$Week <- factor(Ritchieweeklies$Week)#, list(unique(Ritchieweeklies$Week)))
+    #, list(unique(Ritchieweeklies$Week)))
   
   setwd(data.output.path)
   Ritchieweeklies$Stage <- factor(Ritchieweeklies$Stage, c("total","motile","chalimus","copepodid"))
@@ -582,10 +583,109 @@ setwd(wd)
   summary(check$chalsum)
   summary(check$attachedsum)
 
+   abundance.base
   
   library(vtable)
   
   view(abundance.base)
   st(abundance.base, group = "year",group.long = TRUE, vars = "sum_all_lice")
-  st(sealicedata, group = "year",group.long = TRUE, vars = "sum_all_lice")
+
   
+  mainsites <- subset(abundance.base, location == "North Meares" | location == "Ritchie Bay" | location == "Cypre River")
+  st(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice")
+  
+  
+  sumtable(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice",
+           summ=c('notNA(x)',
+                  'NA(x)',
+                  'mean(x)',
+                  'sd(x)',
+                  'min(x)',
+                  'max(x)',
+                  'median(x)',
+                  'sum(x)'))
+  
+  eight <-   subset(mainsites, year == "2018")
+  eight. <- sd(eight$sum_all_lice)/sqrt(length(eight$sum_all_lice))
+  
+  nine <-   subset(mainsites, year == "2019")
+  nine. <- sd(nine$sum_all_lice)/sqrt(length(nine$sum_all_lice))
+  
+  twozero <-   subset(mainsites, year == "2020")
+  twozero. <- sd(twozero$sum_all_lice)/sqrt(length(twozero$sum_all_lice))
+  
+  
+ twoone <-   subset(mainsites, year == "2021")
+ twoone. <- sd(twoone$sum_all_lice)/sqrt(length(twoone$sum_all_lice))
+
+rbind(eight.,nine.,twozero.,twoone.)
+
+
+#Mean and Std Error for total sea lice for each category
+totals2019<-data.frame(mean.cop = numeric(0), mean.chal = numeric(0), mean.mot = numeric(0), 
+                   mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
+                   se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
+
+totals2019[1,1:11]<-c(mean(nine$copsum), mean(nine$chalsum), mean(nine$motsum),mean(nine$sum_all_lice),
+                  sd(nine$copsum)/sqrt(length(nine$fish_id)), 
+                  sd(nine$chalsum)/sqrt(length(nine$fish_id)), 
+                  sd(nine$motsum)/sqrt(length(nine$fish_id)), 
+                  sd(nine$sum_all_lice)/sqrt(length(nine$fish_id)), 
+                  mean(nine$Prevalence), sd(nine$Prevalence), 
+                  sd(nine$Prevalence)/sqrt(length(nine$date)))
+
+
+totals2020<-data.frame(mean.cop = numeric(0), mean.chal = numeric(0), mean.mot = numeric(0), 
+                  mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
+                  se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
+
+totals2020[1,1:11]<-c(mean(twozero$copsum), mean(twozero$chalsum), mean(twozero$motsum),mean(twozero$sum_all_lice),
+                 sd(twozero$copsum)/sqrt(length(twozero$fish_id)), 
+                 sd(twozero$chalsum)/sqrt(length(twozero$fish_id)), 
+                 sd(twozero$motsum)/sqrt(length(twozero$fish_id)), 
+                 sd(twozero$sum_all_lice)/sqrt(length(twozero$fish_id)), 
+                 mean(twozero$Prevalence), sd(twozero$Prevalence), 
+                 sd(twozero$Prevalence)/sqrt(length(twozero$date)))
+
+
+totals2021<-data.frame(mean.cop = numeric(0), mean.chal = numeric(0), mean.mot = numeric(0), 
+                       mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
+                       se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
+
+totals2021[1,1:11]<-c(mean(twoone$copsum), mean(twoone$chalsum), mean(twoone$motsum),mean(twoone$sum_all_lice),
+                      sd(twoone$copsum)/sqrt(length(twoone$fish_id)), 
+                      sd(twoone$chalsum)/sqrt(length(twoone$fish_id)), 
+                      sd(twoone$motsum)/sqrt(length(twoone$fish_id)), 
+                      sd(twoone$sum_all_lice)/sqrt(length(twoone$fish_id)), 
+                      mean(twoone$Prevalence), sd(twoone$Prevalence), 
+                      sd(twoone$Prevalence)/sqrt(length(twoone$date)))
+
+
+totals2019to2021 <- rbind(totals2019,totals2020,totals2021)
+
+view(totals2019to2021)
+
+
+
+
+sumtable(mainsites, group = "year",group.long = TRUE, vars = "species",
+         summ=c('notNA(x)',
+                'NA(x)',
+                'mean(x)',
+                'sd(x)',
+                'min(x)',
+                'max(x)',
+                'median(x)',
+                'sum(x)'))
+
+twoone <-   subset(abundance.base, year == "2021" )
+sumtable(twoone, group = "location",group.long = TRUE, vars = "sum_all_lice",
+         summ=c('notNA(x)',
+                'NA(x)',
+                'mean(x)',
+                'sd(x)',
+                'min(x)',
+                'max(x)',
+                'median(x)',
+                'sum(x)'))
+(unique(twoone$location))

@@ -83,7 +83,8 @@ source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master
 
 
 warnings()
-
+for(j in unique(sealicedata$species)){
+  sealicedata <- subset(sealicedata, species == j)
 #***************************CLEANING
 #x#cleaning time
 #adjusting datas***********************
@@ -197,11 +198,11 @@ sealice.current <- sealicedata
 length(unique(sealice.current$location))
 
 #adjust for our focus species
-sealice.current <- sealice.current<-data.frame(subset(sealice.current, species == "chum"))
+#sealice.current <- sealice.current<-data.frame(subset(sealice.current, species == "chum"))
 
-#yr <- "2021"
+yr <- "2018"
 #starting with the first river in the list, 1
-#sealice.current<-subset(sealice.current, year == yr)### END OF SET UP ###
+sealice.current<-subset(sealice.current, year == yr)### END OF SET UP ###
 ### ## ABUNDANCE ESTIMATES ## #####
 View(sealice.current)
 #Setting the cap for bootstrapping
@@ -230,25 +231,25 @@ a.b.prod <- a.b.prod[-1,]
 
 
 for(j in 1:nrow(base.list)){
-
-    abundance.base<-data.frame(subset(sealice.current, location == base.list[j,]))
-# Removing any dates with less than 30 fish
   
-    
-## Making julian dates
+  abundance.base<-data.frame(subset(sealice.current, location == base.list[j,]))
+  # Removing any dates with less than 30 fish
+  
+  
+  ## Making julian dates
   abundance.base$date <- as.Date(with(abundance.base, paste(year, month, day, sep="-")), "%Y-%m-%d")
   abundance.base$date  <- julian(abundance.base$date) 
   datelist <-(abundance.base$date)
-## Making a new column for weeklyinterval dates
+  ## Making a new column for weeklyinterval dates
   abundance.base$weeklyintvl<-rep(0, each = length(abundance.base$date))
   
-## Finding the weekly intervals
+  ## Finding the weekly intervals
   value <- abundance.base$weeklyintvl
- # all dates next to an empty column
-   dat <- data.frame(datelist, value)
-   # vector of all the unique dates
+  # all dates next to an empty column
+  dat <- data.frame(datelist, value)
+  # vector of all the unique dates
   dates = unique(dat$date)
-    # vector for the number of rows for each date
+  # vector for the number of rows for each date
   count <- c()
   
   for(i in 1:length(dates)){
@@ -260,7 +261,7 @@ for(j in 1:nrow(base.list)){
   # each unique date has a count of it's rows (assuming each row is a fish)
   output1 <- data.frame(dates, count)
   
-# Here you just turn dates into julian dates for ease later on
+  # Here you just turn dates into julian dates for ease later on
   #cbind to as.date version
   abundance.base$date <- as.Date(with(abundance.base, paste(year, month, day, sep="-")), "%Y-%m-%d")
   datelist <-(abundance.base$date)
@@ -293,11 +294,11 @@ for(j in 1:nrow(base.list)){
   #x# from the list above, input the dates into the filter function below by their column number
   if(nrow(remove.dates)>0){
     for(i in 1:nrow(remove.dates)){
-  abundance.base <- abundance.base %>%
-    filter(date != remove.dates[i,])#%>%
-    #filter(date != as.Date(remove.dates[2,])) 
-  #  filter(date != as.Date(remove.dates[,])) # unsure if this second line will cause problems
-  }
+      abundance.base <- abundance.base %>%
+        filter(date != remove.dates[i,])#%>%
+      #filter(date != as.Date(remove.dates[2,])) 
+      #  filter(date != as.Date(remove.dates[,])) # unsure if this second line will cause problems
+    }
   }
   
   #try <- abundance.base[(abundance.base$date != remove.dates[,]),]
@@ -305,144 +306,144 @@ for(j in 1:nrow(base.list)){
   unique(abundance.base$date)
   a.b.prod <- rbind(a.b.prod,abundance.base)
 }
- abundance.base <- a.b.prod # this is redundant but was kept to work with the rest of the code which calls on abundance.base
+abundance.base <- a.b.prod # this is redundant but was kept to work with the rest of the code which calls on abundance.base
 
- #################################################################################################
+#################################################################################################
 
 # 2
 #################################################################################################
 
 ## A table of weekly averages for different lice stages at different sites
-  
+
 #################################################################################################
 
 #a. Finding the weekly intervals
 #################################################################################################
 
-  # RM convert to julian
-  juliandates<-julian(abundance.base$date)
-  
-  # RM find first day of sampling
-  firstday<-min(juliandates)
-  
-  # RM The no. of weeks, rounded
-  no.weeks<-ceiling((max(juliandates)-min(juliandates))/7)
-  
-  # RM A dataframe for the weekly interval data.
-  JDweeklyintervals<-rep(0, times = no.weeks)
-  
-  # RM The weekly intervals are at multiples of 7 starting from the first day. 
-  for (i in 1:no.weeks) {
-    if(i == 1){JDweeklyintervals[i]<-firstday+(6)} # This is to make sure that the first week only has 7 days, not 8.
-    else{JDweeklyintervals[i]<-(firstday+(7*i)-1)} # This is to make sure that the following weeks are 7 days and the weekly interval date is the last day of the interval.
-  }
-  
-  #Below converts julian to normal date. This is a useful bit of code to recycle... 
-  weeklyintervals<-as.Date(JDweeklyintervals, origin=as.Date("1970-01-01"))
-  
-  #weekly intervals are given above to use for making weekly means. Now you can calculate means within those dates.
-  
-  #b. Making a column in the main data set that assigns weekly intervals to each row.
-  #################################################################################################
+# RM convert to julian
+juliandates<-julian(abundance.base$date)
 
-    #may need to make the abundance.base into julian date
-  abundance.base$j.date<-julian(abundance.base$date)
-  
-  JDweeklyintervalsloops<-c(0, JDweeklyintervals) #RM The 0 at the sart captures all the dates prior to the first weekly interval date (ie. the first 7 days of sampling)
-  abundance.base$weeklyintvl<-rep(0, each = length(abundance.base$date))
-  #using subsets to add data of appropriate date to the vectors
-  
-  for (i in 1:(length(JDweeklyintervalsloops)-1)) {
-   # RM Weekly interval subset
-     loopintvl<-subset(abundance.base, abundance.base$j.date > JDweeklyintervalsloops[i] & abundance.base$j.date <= JDweeklyintervalsloops[i+1])
-    # RM The index of the dates in this interval subset.
-     positionsforaddingtoabundance.base<-which(abundance.base$j.date > JDweeklyintervalsloops[i] & abundance.base$j.date <= JDweeklyintervalsloops[i+1])
-    # RM Assigning the latest date of a weekly interval to the weekly interval column of the main dataset 
-    abundance.base$weeklyintvl[positionsforaddingtoabundance.base]<-JDweeklyintervalsloops[i+1]
-    
-    
-  }
-  
-  #c. Finding weekly counts
-  #################################################################################################
-  
-  #setting up counts
-  
-  #Select columns corresponding to all the lice count columns
-  #x# if column names change in the database, the lines below must change.
-  salmcounts <- abundance.base %>%
-    select( Lep_cope, chalA, chalB, Lep_PAmale, Lep_PAfemale, Lep_male,
-            Lep_nongravid, Lep_gravid, Caligus_cope, Caligus_mot, Caligus_gravid, unid_cope,
-            chal_unid,unid_PA, unid_adult)
-  
-  # RM defining categories of lice.
-  
-  #motile lice sub
-  motlice<-abundance.base[,c("Caligus_mot", "Caligus_gravid", "Lep_gravid", "Lep_nongravid", "Lep_male", "Lep_PAfemale", "Lep_PAmale", "unid_PA", "unid_adult")]
-  #cope lice sub
-  copes<-abundance.base[,c("Lep_cope", "Caligus_cope", "unid_cope")]
-  #chalimus lice sub
-  chals<-abundance.base[,c("chalA", "chalB", "chal_unid")]
-  #attached lice sub
-  attlice<-abundance.base[,c("Lep_cope","chalA","chalB","Caligus_cope","unid_cope","chal_unid")]
+# RM find first day of sampling
+firstday<-min(juliandates)
 
-  #total lice sub
-  abundance.base <- abundance.base %>% rowwise() %>%
-    dplyr::mutate(Sum_all_lice = sum(c_across(colnames(salmcounts)))) 
-  
-  #Below gives columns of summed motiles, attached, copepodids, chalimus, and total counts. Useful for prevalence and abundance plots.
-  abundance.base$motsum<-rowSums(motlice, na.rm = TRUE)
-  abundance.base$copsum<-rowSums(copes, na.rm = TRUE)
-  abundance.base$chalsum<-rowSums(chals, na.rm = TRUE)
-  abundance.base$attachedsum<-rowSums(attlice, na.rm = TRUE)
-  abundance.base$sum_all_lice<-rowSums(salmcounts, na.rm = T)
-  
-  # ensuring the column class is numeric
-  abundance.base$motsum<- as.numeric(abundance.base$motsum)
-  abundance.base$copsum<- as.numeric(abundance.base$copsum)
-  abundance.base$chalsum<-as.numeric(abundance.base$chalsum)
-  abundance.base$attachedsum<-as.numeric(abundance.base$attachedsum)
-  abundance.base$sum_all_lice<-as.numeric(abundance.base$sum_all_lice)
-  
-  
-  
-  library(vtable)
-  st(abundance.base, group = "year",group.long = TRUE, vars = "sum_all_lice")
-  
-  #d. Finding the weekly means for each lice category
-  #################################################################################################
-  
-  #making for loop for each, starting with motiles
-  
-  # making a dataframe with dates, lice, and all sites included
-  weeksitelice<-data.frame(abundance.base$date, abundance.base$j.date, abundance.base$weeklyintvl ,abundance.base$location,  
-                           abundance.base$copsum, abundance.base$chalsum, abundance.base$motsum, abundance.base$sum_all_lice)
-  names(weeksitelice)<-paste(c("date", "j.date", "weeklyintvl", "location", "copsum", "chalsum", "motsum", "sum_all_lice"))
-  
-  view(weeksitelice)
-  # subsetting the dataframe for each site
-  
-  #d. i. making a loop to focus on one site at a time for weekly mean abundance for each louse stage 
-  #################################################################################################
+# RM The no. of weeks, rounded
+no.weeks<-ceiling((max(juliandates)-min(juliandates))/7)
 
+# RM A dataframe for the weekly interval data.
+JDweeklyintervals<-rep(0, times = no.weeks)
+
+# RM The weekly intervals are at multiples of 7 starting from the first day. 
+for (i in 1:no.weeks) {
+  if(i == 1){JDweeklyintervals[i]<-firstday+(6)} # This is to make sure that the first week only has 7 days, not 8.
+  else{JDweeklyintervals[i]<-(firstday+(7*i)-1)} # This is to make sure that the following weeks are 7 days and the weekly interval date is the last day of the interval.
+}
+
+#Below converts julian to normal date. This is a useful bit of code to recycle... 
+weeklyintervals<-as.Date(JDweeklyintervals, origin=as.Date("1970-01-01"))
+
+#weekly intervals are given above to use for making weekly means. Now you can calculate means within those dates.
+
+#b. Making a column in the main data set that assigns weekly intervals to each row.
+#################################################################################################
+
+#may need to make the abundance.base into julian date
+abundance.base$j.date<-julian(abundance.base$date)
+
+JDweeklyintervalsloops<-c(0, JDweeklyintervals) #RM The 0 at the sart captures all the dates prior to the first weekly interval date (ie. the first 7 days of sampling)
+abundance.base$weeklyintvl<-rep(0, each = length(abundance.base$date))
+#using subsets to add data of appropriate date to the vectors
+
+for (i in 1:(length(JDweeklyintervalsloops)-1)) {
+  # RM Weekly interval subset
+  loopintvl<-subset(abundance.base, abundance.base$j.date > JDweeklyintervalsloops[i] & abundance.base$j.date <= JDweeklyintervalsloops[i+1])
+  # RM The index of the dates in this interval subset.
+  positionsforaddingtoabundance.base<-which(abundance.base$j.date > JDweeklyintervalsloops[i] & abundance.base$j.date <= JDweeklyintervalsloops[i+1])
+  # RM Assigning the latest date of a weekly interval to the weekly interval column of the main dataset 
+  abundance.base$weeklyintvl[positionsforaddingtoabundance.base]<-JDweeklyintervalsloops[i+1]
   
-   for (ll in 1:nrow(base.list)){
-setwd(wd)
+  
+}
+
+#c. Finding weekly counts
+#################################################################################################
+
+#setting up counts
+
+#Select columns corresponding to all the lice count columns
+#x# if column names change in the database, the lines below must change.
+salmcounts <- abundance.base %>%
+  select( Lep_cope, chalA, chalB, Lep_PAmale, Lep_PAfemale, Lep_male,
+          Lep_nongravid, Lep_gravid, Caligus_cope, Caligus_mot, Caligus_gravid, unid_cope,
+          chal_unid,unid_PA, unid_adult)
+
+# RM defining categories of lice.
+
+#motile lice sub
+motlice<-abundance.base[,c("Caligus_mot", "Caligus_gravid", "Lep_gravid", "Lep_nongravid", "Lep_male", "Lep_PAfemale", "Lep_PAmale", "unid_PA", "unid_adult")]
+#cope lice sub
+copes<-abundance.base[,c("Lep_cope", "Caligus_cope", "unid_cope")]
+#chalimus lice sub
+chals<-abundance.base[,c("chalA", "chalB", "chal_unid")]
+#attached lice sub
+attlice<-abundance.base[,c("Lep_cope","chalA","chalB","Caligus_cope","unid_cope","chal_unid")]
+
+#total lice sub
+abundance.base <- abundance.base %>% rowwise() %>%
+  dplyr::mutate(Sum_all_lice = sum(c_across(colnames(salmcounts)))) 
+
+#Below gives columns of summed motiles, attached, copepodids, chalimus, and total counts. Useful for prevalence and abundance plots.
+abundance.base$motsum<-rowSums(motlice, na.rm = TRUE)
+abundance.base$copsum<-rowSums(copes, na.rm = TRUE)
+abundance.base$chalsum<-rowSums(chals, na.rm = TRUE)
+abundance.base$attachedsum<-rowSums(attlice, na.rm = TRUE)
+abundance.base$sum_all_lice<-rowSums(salmcounts, na.rm = T)
+
+# ensuring the column class is numeric
+abundance.base$motsum<- as.numeric(abundance.base$motsum)
+abundance.base$copsum<- as.numeric(abundance.base$copsum)
+abundance.base$chalsum<-as.numeric(abundance.base$chalsum)
+abundance.base$attachedsum<-as.numeric(abundance.base$attachedsum)
+abundance.base$sum_all_lice<-as.numeric(abundance.base$sum_all_lice)
+
+
+
+library(vtable)
+st(abundance.base, group = "year",group.long = TRUE, vars = "sum_all_lice")
+
+#d. Finding the weekly means for each lice category
+#################################################################################################
+
+#making for loop for each, starting with motiles
+
+# making a dataframe with dates, lice, and all sites included
+weeksitelice<-data.frame(abundance.base$date, abundance.base$j.date, abundance.base$weeklyintvl ,abundance.base$location,  
+                         abundance.base$copsum, abundance.base$chalsum, abundance.base$motsum, abundance.base$sum_all_lice)
+names(weeksitelice)<-paste(c("date", "j.date", "weeklyintvl", "location", "copsum", "chalsum", "motsum", "sum_all_lice"))
+
+view(weeksitelice)
+# subsetting the dataframe for each site
+
+#d. i. making a loop to focus on one site at a time for weekly mean abundance for each louse stage 
+#################################################################################################
+
+
+for (ll in 1:nrow(base.list)){
+  setwd(wd)
   # the site to focus on.
   focusweeksitelice<-subset(weeksitelice, location == print(base.list[ll,]))
-
+  
   # RM : check
   #unique(focusweeksitelice$location)
   rowcounts.fin <- data.frame(weeklyintvl = numeric(0),
-                          Stage = numeric(0),
-                          site = numeric(0),
-                          mean = numeric(0),
-                          lci = numeric(0),
-                          uci = numeric(0))
+                              Stage = numeric(0),
+                              site = numeric(0),
+                              mean = numeric(0),
+                              lci = numeric(0),
+                              uci = numeric(0))
   rowcounts.fin$site <- factor(rowcounts.fin$site, levels= base.list)  
   
   lice.cat <- c("copepodid", "chalimus","motile","total")
-
+  
   names(focusweeksitelice)[5] <- "copepodid"
   names(focusweeksitelice)[6] <- "chalimus"
   names(focusweeksitelice)[7] <- "motile"
@@ -454,25 +455,25 @@ setwd(wd)
   focusweeksitelice <- melt(focusweeksitelice, id=c("date","j.date","weeklyintvl","location"))
   
   for(lc in 1:length(lice.cat)){
-  rowcounts <- data.frame(weeklyintvl = numeric(0),
-                          Stage = numeric(0),
-                          site = numeric(0),
-                          mean = numeric(0),
-                          lci = numeric(0),
-                          uci = numeric(0))
-  
-  rowcounts$site <- factor(rowcounts$site)  
-  
-  lci<- NULL
-  uci <- NULL
-  site.boot<-NULL
-  #put site.boot here
-  bigsiteboot<-rep(0, times = length(JDweeklyintervals))
-  weeklyintervalscol<- JDweeklyintervals
-  meanbootcol<-NULL
-  
-
-
+    rowcounts <- data.frame(weeklyintvl = numeric(0),
+                            Stage = numeric(0),
+                            site = numeric(0),
+                            mean = numeric(0),
+                            lci = numeric(0),
+                            uci = numeric(0))
+    
+    rowcounts$site <- factor(rowcounts$site)  
+    
+    lci<- NULL
+    uci <- NULL
+    site.boot<-NULL
+    #put site.boot here
+    bigsiteboot<-rep(0, times = length(JDweeklyintervals))
+    weeklyintervalscol<- JDweeklyintervals
+    meanbootcol<-NULL
+    
+    
+    
     loopsfocusdata<-focusweeksitelice[focusweeksitelice$variable == lice.cat[lc],]
     
     
@@ -504,21 +505,21 @@ setwd(wd)
       #Getting mean.boot output out of loop
       meanbootcol<- c(meanbootcol, mean(mean.boot))
     }
-
-  
-  JDweeklyintervalsfin<-JDweeklyintervals
-  ntable<-length(JDweeklyintervals)
-  for (i in 1:ntable) {
-    rowcounts[(i),1] <- c(JDweeklyintervalsfin[i])
-    rowcounts[(i),4:6] <- c(meanbootcol[i], lci[i], uci[i])
+    
+    
+    JDweeklyintervalsfin<-JDweeklyintervals
+    ntable<-length(JDweeklyintervals)
+    for (i in 1:ntable) {
+      rowcounts[(i),1] <- c(JDweeklyintervalsfin[i])
+      rowcounts[(i),4:6] <- c(meanbootcol[i], lci[i], uci[i])
+    }
+    
+    rowcounts$site<-rep(base.list[ll,], each = length(JDweeklyintervals))
+    rowcounts$Stage<-rep(lice.cat[lc], each = length(JDweeklyintervals))
+    
+    rowcounts.fin <- rbind(rowcounts.fin, rowcounts)
   }
   
-  rowcounts$site<-rep(base.list[ll,], each = length(JDweeklyintervals))
-  rowcounts$Stage<-rep(lice.cat[lc], each = length(JDweeklyintervals))
-  
-  rowcounts.fin <- rbind(rowcounts.fin, rowcounts)
-  }
- 
   weeklyliceloctable<-rowcounts.fin
   view(weeklyliceloctable)
   
@@ -526,10 +527,10 @@ setwd(wd)
   
   weeklyliceloctable$weeklyintvl<-as.Date(weeklyliceloctable$weeklyintvl, origin = as.Date("1970-01-01"))
   weeklyliceloctable$weeklyintvl<-format(weeklyliceloctable$weeklyintvl, format = "%b %d %y")
-
+  
   #d. ii. making a final table and plot of weekly mean abundances of each louse stage, for each site
   #################################################################################################
-
+  
   Ritchieweeklies <- na.omit(weeklyliceloctable)
   class(Ritchieweeklies$Week)
   #ritchie #ggplot attempt 
@@ -541,22 +542,22 @@ setwd(wd)
   
   colnames(Ritchieweeklies)[which(names(Ritchieweeklies) == "site")] <- "Site"
   
-library(lubridate)
+  library(lubridate)
   Ritchieweeklies$Week  <-  factor(Ritchieweeklies$Week)
   library(reshape2)
-
   
-    #, list(unique(Ritchieweeklies$Week)))
+  
+  #, list(unique(Ritchieweeklies$Week)))
   
   setwd(data.output.path)
   Ritchieweeklies$Stage <- factor(Ritchieweeklies$Stage, c("total","motile","chalimus","copepodid"))
-  write.csv(Ritchieweeklies,file.path(data.output.path, paste(base.list[ll,], "WeeklyAbundance", yr, ".csv", sep = "_")))
+  write.csv(Ritchieweeklies,file.path(data.output.path, paste(j, base.list[ll,], "WeeklyAbundance", yr, ".csv", sep = "_")))
   
-   Ritchieweeklies <- read.csv(paste(base.list[ll,], "WeeklyAbundance", yr, ".csv", sep = "_"))
-   ggplot(Ritchieweeklies, aes(Week, mean, fill= Stage)) + 
+  Ritchieweeklies <- read.csv(paste(j, base.list[ll,], "WeeklyAbundance", yr, ".csv", sep = "_"))
+  ggplot(Ritchieweeklies, aes(Week, mean, fill= Stage)) + 
     geom_bar(stat = 'identity', position = 'dodge')+ labs(x = "Week", y = "Mean Abundance") + 
     theme_Publication()+ scale_fill_viridis_d(direction = -1, option = "D",begin = 0.3, end = 0.9)+
-     ylim(0,6)+
+    ylim(0,6)+
     geom_errorbar(data = Ritchieweeklies,aes(ymin=lci, ymax=uci), position=position_dodge(.9),  width=0.7, size=.3, color ="black")+
     theme(axis.text=element_text(size=14),
           axis.title.x=element_blank(),
@@ -566,86 +567,86 @@ library(lubridate)
     theme(plot.title = element_text(hjust = 0.5))  
   #png(filename=paste(base.list[9,], "Weekly_Mean_Abundance", ".png", sep = "_"))
   #dev.off()
-   setwd(figures.path)
-     ggsave(filename=paste(base.list[ll,], "Weekly_Mean_Abundance", ".png", sep = "_"))
+  setwd(figures.path)
+  ggsave(filename=paste(j, base.list[ll,], "Weekly_Mean_Abundance", ".png", sep = "_"))
   #ggsave("output.pdf")
-    }
-  
-  
-  check <- subset(abundance.base,abundance.base$location == base.list[ll,])
-  check$weeklyintvl<-as.Date(check$weeklyintvl, origin = as.Date("1970-01-01"))
-  check$weeklyintvl<-format(check$weeklyintvl, format = "%b %d %y")
-  unique(check$weeklyintvl)
-  
-  summary(check$sum_all_lice)
-  summary(check$motsum)
-  summary(check$copsum)
-  summary(check$chalsum)
-  summary(check$attachedsum)
+}
 
-   abundance.base
-  
-  library(vtable)
-  
-  view(abundance.base)
-  st(abundance.base, group = "year",group.long = TRUE, vars = "sum_all_lice")
 
-  
-  mainsites <- subset(abundance.base, location == "North Meares" | location == "Ritchie Bay" | location == "Cypre River")
-  st(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice")
-  
-  
-  sumtable(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice",
-           summ=c('notNA(x)',
-                  'NA(x)',
-                  'mean(x)',
-                  'sd(x)',
-                  'min(x)',
-                  'max(x)',
-                  'median(x)',
-                  'sum(x)'))
-  
-  eight <-   subset(mainsites, year == "2018")
-  eight. <- sd(eight$sum_all_lice)/sqrt(length(eight$sum_all_lice))
-  
-  nine <-   subset(mainsites, year == "2019")
-  nine. <- sd(nine$sum_all_lice)/sqrt(length(nine$sum_all_lice))
-  
-  twozero <-   subset(mainsites, year == "2020")
-  twozero. <- sd(twozero$sum_all_lice)/sqrt(length(twozero$sum_all_lice))
-  
-  
- twoone <-   subset(mainsites, year == "2021")
- twoone. <- sd(twoone$sum_all_lice)/sqrt(length(twoone$sum_all_lice))
+check <- subset(abundance.base,abundance.base$location == base.list[ll,])
+check$weeklyintvl<-as.Date(check$weeklyintvl, origin = as.Date("1970-01-01"))
+check$weeklyintvl<-format(check$weeklyintvl, format = "%b %d %y")
+unique(check$weeklyintvl)
+
+summary(check$sum_all_lice)
+summary(check$motsum)
+summary(check$copsum)
+summary(check$chalsum)
+summary(check$attachedsum)
+
+abundance.base
+
+library(vtable)
+
+view(abundance.base)
+st(abundance.base, group = "year",group.long = TRUE, vars = "sum_all_lice")
+
+
+mainsites <- subset(abundance.base, location == "North Meares" | location == "Ritchie Bay" | location == "Cypre River")
+st(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice")
+
+
+sumtable(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice",
+         summ=c('notNA(x)',
+                'NA(x)',
+                'mean(x)',
+                'sd(x)',
+                'min(x)',
+                'max(x)',
+                'median(x)',
+                'sum(x)'))
+
+eight <-   subset(mainsites, year == "2018")
+eight. <- sd(eight$sum_all_lice)/sqrt(length(eight$sum_all_lice))
+
+nine <-   subset(mainsites, year == "2019")
+nine. <- sd(nine$sum_all_lice)/sqrt(length(nine$sum_all_lice))
+
+twozero <-   subset(mainsites, year == "2020")
+twozero. <- sd(twozero$sum_all_lice)/sqrt(length(twozero$sum_all_lice))
+
+
+twoone <-   subset(mainsites, year == "2021")
+twoone. <- sd(twoone$sum_all_lice)/sqrt(length(twoone$sum_all_lice))
 
 rbind(eight.,nine.,twozero.,twoone.)
 
 
 #Mean and Std Error for total sea lice for each category
 totals2019<-data.frame(mean.cop = numeric(0), mean.chal = numeric(0), mean.mot = numeric(0), 
-                   mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
-                   se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
+                       mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
+                       se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
 
 totals2019[1,1:11]<-c(mean(nine$copsum), mean(nine$chalsum), mean(nine$motsum),mean(nine$sum_all_lice),
-                  sd(nine$copsum)/sqrt(length(nine$fish_id)), 
-                  sd(nine$chalsum)/sqrt(length(nine$fish_id)), 
-                  sd(nine$motsum)/sqrt(length(nine$fish_id)), 
-                  sd(nine$sum_all_lice)/sqrt(length(nine$fish_id)), 
-                  mean(nine$Prevalence), sd(nine$Prevalence), 
-                  sd(nine$Prevalence)/sqrt(length(nine$date)))
+                      sd(nine$copsum)/sqrt(length(nine$fish_id)), 
+                      sd(nine$chalsum)/sqrt(length(nine$fish_id)), 
+                      sd(nine$motsum)/sqrt(length(nine$fish_id)), 
+                      sd(nine$sum_all_lice)/sqrt(length(nine$fish_id)), 
+                      mean(nine$Prevalence), sd(nine$Prevalence), 
+                      sd(nine$Prevalence)/sqrt(length(nine$date)))
 
 
 totals2020<-data.frame(mean.cop = numeric(0), mean.chal = numeric(0), mean.mot = numeric(0), 
-                  mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
-                  se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
+                       mean.tot = numeric(0),se.cop = numeric(0), se.chal = numeric(0), se.mot = numeric(0), 
+                       se.tot = numeric(0), mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
 
 totals2020[1,1:11]<-c(mean(twozero$copsum), mean(twozero$chalsum), mean(twozero$motsum),mean(twozero$sum_all_lice),
-                 sd(twozero$copsum)/sqrt(length(twozero$fish_id)), 
-                 sd(twozero$chalsum)/sqrt(length(twozero$fish_id)), 
-                 sd(twozero$motsum)/sqrt(length(twozero$fish_id)), 
-                 sd(twozero$sum_all_lice)/sqrt(length(twozero$fish_id)), 
-                 mean(twozero$Prevalence), sd(twozero$Prevalence), 
-                 sd(twozero$Prevalence)/sqrt(length(twozero$date)))
+                      sd(twozero$copsum)/sqrt(length(twozero$fish_id)), 
+                      sd(twozero$chalsum)/sqrt(length(twozero$fish_id)), 
+                      sd(twozero$motsum)/sqrt(length(twozero$fish_id)), 
+                      sd(twozero$sum_all_lice)/sqrt(length(twozero$fish_id)), 
+                      mean(twozero$Prevalence), sd(twozero$Prevalence), 
+                      sd(twozero$Prevalence)/sqrt(length(twozero$date)))
 
 
 totals2021<-data.frame(mean.cop = numeric(0), mean.chal = numeric(0), mean.mot = numeric(0), 
@@ -689,3 +690,4 @@ sumtable(twoone, group = "location",group.long = TRUE, vars = "sum_all_lice",
                 'median(x)',
                 'sum(x)'))
 (unique(twoone$location))
+

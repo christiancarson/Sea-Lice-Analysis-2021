@@ -87,7 +87,8 @@ source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master
 
 
 warnings()
-
+for(j in unique(sealicedata$species)){
+  sealicedata <- subset(sealicedata, species == j)
 #***************************CLEANING
 #x#cleaning time
 #adjusting datas***********************
@@ -126,7 +127,7 @@ chals<-sealicedata[,c("chalA", "chalB", "chal_unid")]
 attlice<-sealicedata[,c("Lep_cope","chalA","chalB","Caligus_cope","unid_cope","chal_unid")]
 
 
-#X# List character variables and go through one bye one
+#X# List character variables and go through one by one
 list(unique(colnames(sealicedata)))
 #make sure year is consistent and case sensitive
 list(unique(sealicedata$year))
@@ -505,10 +506,10 @@ getwd()
 
 #save above table to csv with specified path = wd/data.output.path
 #automated version
-write.csv(meanlicetablewithtotalse,file.path(data.output.path,"meanlicetable.bysite.csv"))
 
+write.csv(meanlicetablewithtotalse,file.path(data.output.path,paste(i,"meanlicetable.bysite.csv")))
 
-write.csv(licetable,file.path(data.output.path,"totalsumslicetable.csv"))
+write.csv(licetable,file.path(data.output.path,paste(i,"totalsumslicetable.csv")))
 
 ####optional subsets for site groupings################
 #prev.bedwell2019<-data.frame(subset(siteprevalence, location == "Bedwell Estuary North" | location == "Bedwell Estuary Middle" | location == "Bedwell Estuary South"))
@@ -645,7 +646,7 @@ for (i in 1:nloop) {
   # RM : if a site was only sampled once, the plot looks pretty silly. It shows 2000 - 2040 with data for one x value. 
   #     We probably don't need to change these plots because seeing this data over time is uneccesary. They can just be discarded and the info can be seen in the barplot
   
-  title(main = listofsites[i])
+  title(main = paste(listofsites[i]), j)
   
   
   lines(siteagg3$Group.date, siteagg3$total.prevalence, lty=linetype[1], pch=plotchar[1], lwd = 2, type ="o", col = "#39558CFF", cex =1.5)
@@ -676,6 +677,7 @@ colnames(twoone)
 totals2021<-data.frame(mean.prev = numeric(0), sd.prev = numeric(0), se.prev = numeric(0))
 
 totals2021[1,1:3]<-c(mean(twoone$total.prevalence), sd(twoone$total.prevalence), 
-                      sd(twoone$total.prevalence)/sqrt(length(twoone$Group.date)))
+                     sd(twoone$total.prevalence)/sqrt(length(twoone$Group.date)))
 
+}
 view(totals2021)

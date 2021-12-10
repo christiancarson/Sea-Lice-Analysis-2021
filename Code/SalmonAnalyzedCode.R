@@ -87,6 +87,9 @@ source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master
 
 warnings()
 
+for(j in unique(sealicedata$species)){
+  
+  sealice <- subset(sealice, species == j)
 #***************************CLEANING
 #x#cleaning time
 #adjusting datas***********************
@@ -200,12 +203,12 @@ bruh  <- data.frame(xtabs(n ~ year + location, sumTable))
 
 colnames(bruh)
 #ggplot(bruh, aes(x=factor(location),y=Freq, fill=year, label=Freq))+
-  geom_col(position=position_stack()) +labs(x="Location",y="Total Sum",fill = "Year",
-                                            title="Juvenile Salmon Examined from 2018 - 2021")+
+geom_col(position=position_stack()) +labs(x="Location",y="Total Sum",fill = "Year",
+                                          title="Juvenile Salmon Examined from 2018 - 2021")+
   theme_Publication()+  scale_fill_viridis_d(begin = 0.25, end = .95,direction = 1, option = "D")+     
   geom_text(size = 3, position = position_stack(vjust = 0.5))
 ####counts of fish analyzed by species
-  colnames(sealicedata)
+colnames(sealicedata)
 
 #adjust for our focus species
 sealice.current <- sealice.current<-data.frame(subset(sealice.current,
@@ -335,6 +338,6 @@ ggplot(speciestab, aes(x=factor(year),y=n, fill=species))+
   theme_Publication()+  scale_fill_viridis_d(direction = 1, option = "D")
 
 
-ggsave(filename=paste(capexamplot, "Captured&ExaminedLice_Yearly", ".png", sep = "_"))
+ggsave(filename=paste(j,capexamplot, "Captured&ExaminedLice_Yearly", ".png", sep = "_"))
 
-
+}

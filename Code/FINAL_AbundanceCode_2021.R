@@ -107,6 +107,8 @@ names(sealicedata)[1]<-paste("fish_id")
 #na's to 0 in sum_all_lice
 sealicedata$sum_all_lice[is.na(sealicedata$sum_all_lice)]<-0
 
+
+#Don't have a lot of experience in dplyr. - ML
 sealicedata <- sealicedata %>% rowwise() %>%
   dplyr::mutate(sum_all_lice = sum(c_across(Lep_cope:unid_adult)))
 
@@ -133,6 +135,8 @@ list(unique(colnames(sealicedata)))
 list(unique(sealicedata$year))
 #make sure names of species are correct
 list(unique(sealicedata$species))
+
+#could use a forloop to fix here, will chekc out later -ML
 #fixing species names
 sealicedata$species[sealicedata$species == "chum "]<- "chum"
 sealicedata$species[sealicedata$species == "coho "]<- "coho"
@@ -148,6 +152,7 @@ list(unique(sealicedata$location))
 #adjusting names based on list output
 #x#fix errors in names, do this by inputing the incorrect/ current name into the brackets, 
 #and then the corrected version into the assigned end <-
+## Maybe apply a forloop here as well, will check out later -ML
 
 #Bedwell Sound North Fix
 sealicedata$location[sealicedata$location == "Bedwell Estuary "]<- "Bedwell Sound North"
@@ -245,6 +250,7 @@ sealice.current$sum_all_lice<-as.numeric(sealice.current$sum_all_lice)
 
 ### END OF SET UP ###
 ### ## ABUNDANCE ESTIMATES ## #####
+#Abundance refers to the number of individuals per species - ML
 
 #Setting the cap for bootstrapping
 n.boot.b<-1000

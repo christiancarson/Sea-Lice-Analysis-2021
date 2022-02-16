@@ -1,0 +1,343 @@
+#Title: Sea Lice Monitoring Outputs 2022
+#Author : Critty (Christian) Carson
+#Last updated : August 6th, 2021
+#Description : Makes mean prevalence, abundance, TS and forklength plots for 
+#Sea Lice Monitoring Program 
+#at Cedar Coast Field Station. Plots are made for all available locations
+#Based on sea lice monitoring data of Cedar Coast Field Station
+
+# This code has been made so that it only has to be edited slightly to produce 
+#plots/tables on different data.Follow the steps by searching #X# for the sections
+#you need to edit for the code to run and produce results
+#Can search with ctrl F for main headings or their subheadings:
+
+#X#To use this code, make a .csv file of your new datafile,
+#and ensure it matches the format of the original data file.
+#EX: If your datafile
+
+
+#X##SET UP##### 
+#X#first make sure R and R studio are up to date
+#install.packages("installr")
+#library(installr)
+
+#update r studio
+#From within RStudio, go to Help > Check for Updates to install newer version of
+#RStudio (if available, optional).
+
+#x#************** change to your own directory
+
+#--------------make project folders and folder paths----------------------------
+#set your wd here, MAKE SURE ITS SET TO YOUR PROJECT DATA BASE IN SESSION DROPDOWN MENU ABOVE
+wd <- "/Users/user/Documents/GitHub/Sea-Lice-Analysis-2021" 
+setwd(wd)
+getwd()
+folders <- c("Code", "Data", "OutputFigures", "OutputData")
+
+# function to create folders below
+for(i in 1:length(folders)){
+  if(file.exists(folders[i]) == FALSE)
+    dir.create(folders[i])
+}
+
+# we also need to store the paths to these new folders
+
+code.output.path <- paste(wd, "/", folders[1], sep = "")
+data.input.path <- paste(wd, "/", folders[2], sep = "")
+figures.path <- paste(wd, "/", folders[3], sep = "")
+data.output.path <- paste(wd, "/", folders[4], sep = "")
+
+# our raw data is stored in different folders, lets make the paths
+sealicedata.path <- paste(wd, "/", "Data", sep = "")
+
+# now we can access and save stuff to these folders!
+
+#---------------------Below, we upload and clean the  data----------
+
+#x# time to upload the datas into folder
+sealicedata <- read.csv(paste(sealicedata.path, "/", "CCFS_SeaLice_Monitoring_2021.csv",
+                              sep = ""), stringsAsFactors = FALSE)
+
+
+#unhashtag to install packages below 
+#install.packages(c("boot", "MASS","plyr","dplyr", "ggplot2", "tibble", "car", "reshape2",
+#                  "epitools", "readxl", "tidyverse","arsenal")))
+library(boot)
+library(MASS)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(tibble)
+library(car)
+library(reshape2)
+library(epitools)
+library(readxl)
+library(tidyverse)
+library(readr)
+library(arsenal)
+library(lubridate)
+library(vtable)
+library(nlme)
+library(here)
+library(ggthemes)
+
+
+source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/ggplot_theme_Publication-2.R")
+
+
+warnings()
+
+for(j in unique(sealicedata$species)){
+  
+  sealice <- subset(sealice, species == j)
+#***************************CLEANING
+#x#cleaning time
+#adjusting datas***********************
+sealicedata$year<-as.numeric(sealicedata$year)
+#adjusting dates to date format
+sealicedata$date <- as.Date(with(sealicedata, 
+                                 paste(year, month, day, sep="-")), "%Y-%m-%d")
+#height -> as.numeric
+sealicedata$height<-as.numeric(sealicedata$height)
+#making it all a df
+sealicedata<-data.frame(sealicedata)
+#changing na's to 0's
+sealicedata[ , 12:26][is.na(sealicedata[ , 12:26] ) ] <- 0 
+#col 1 to "fish_id"
+names(sealicedata)[1]<-paste("fish_id")
+#na's to 0 in sum_all_lice
+sealicedata$sum_all_lice[is.na(sealicedata$sum_all_lice)]<-0
+
+sealicedata <- sealicedata %>% rowwise() %>%
+  dplyr::mutate(sum_all_lice = sum(c_across(Lep_cope:unid_adult)))
+
+salmcounts <- sealicedata %>%
+  select( Lep_cope, chalA, chalB, Lep_PAmale, Lep_PAfemale, Lep_male,
+          Lep_nongravid, Lep_gravid, Caligus_cope, Caligus_mot, Caligus_gravid, unid_cope,
+          chal_unid,unid_PA, unid_adult)
+
+# RM defining categories of lice.
+
+#motile lice sub
+motlice<-sealicedata[,c("Caligus_mot", "Caligus_gravid", "Lep_gravid", "Lep_nongravid", "Lep_male", "Lep_PAfemale", "Lep_PAmale", "unid_PA", "unid_adult")]
+#cope lice sub
+copes<-sealicedata[,c("Lep_cope", "Caligus_cope", "unid_cope")]
+#chalimus lice sub
+chals<-sealicedata[,c("chalA", "chalB", "chal_unid")]
+#attached lice sub
+attlice<-sealicedata[,c("Lep_cope","chalA","chalB","Caligus_cope","unid_cope","chal_unid")]
+
+
+#X# List character variables and go through one bye one
+list(unique(colnames(sealicedata)))
+#make sure year is consistent and case sensitive
+list(unique(sealicedata$year))
+#make sure names of species are correct
+list(unique(sealicedata$species))
+#fixing species names
+sealicedata$species[sealicedata$species == "chum "]<- "chum"
+sealicedata$species[sealicedata$species == "coho "]<- "coho"
+sealicedata$species[sealicedata$species == "chinook "]<- "chinook"
+
+
+
+
+#adjusting sample locations
+#list locations
+list(unique(sealicedata$location))
+
+#adjusting names based on list output
+#x#fix errors in names, do this by inputing the incorrect/ current name into the brackets, 
+#and then the corrected version into the assigned end <-
+
+#Bedwell Sound North Fix
+sealicedata$location[sealicedata$location == "Bedwell Estuary "]<- "Bedwell Sound North"
+sealicedata$location[sealicedata$location == "Bedwell estuary"]<- "Bedwell Sound North"
+#Currently Bedwell Estuary is mapped as multiple locations, several close to the estuary and
+#several near Bedwell Sound Middle: NEED TO FIX
+#sealicedata$location[sealicedata$location == "Bedwell Estuary"]<- "Bedwell Sound North"
+sealicedata$location[sealicedata$location ==  "Bedwell River"]<-"Bedwell Sound North"
+sealicedata$location[sealicedata$location == "Bedwell Estuary 4"]<- "Bedwell Sound North"
+sealicedata$location[sealicedata$location == "Bedwell estuary 4"]<- "Bedwell Sound North"
+
+#Bedwell Sound Middle Fix
+sealicedata$location[sealicedata$location == "Bedwell 2 "]<- "Bedwell Sound Middle"
+sealicedata$location[sealicedata$location == "Bedwell estuary 3"]<- "Bedwell Sound Middle"
+sealicedata$location[sealicedata$location == "Bedwell Estuary 3"]<- "Bedwell Sound Middle"
+sealicedata$location[sealicedata$location == "Bedwell estuary 2"]<- "Bedwell Sound Middle"
+sealicedata$location[sealicedata$location == "Bedwell Estuary 2"]<- "Bedwell Sound Middle"
+sealicedata$location[sealicedata$location ==  "Bedwell 2"]<-"Bedwell Sound Middle"
+sealicedata$location[sealicedata$location ==  "Sniffles"]<-"Bedwell Sound Middle"
+sealicedata$location[sealicedata$location ==  "Sniffles 2"]<-"Bedwell Sound Middle"
+
+
+#Bedwell Sound South Fix
+sealicedata$location[sealicedata$location ==  "Bedwell 3"]<- "Bedwell Sound South"
+
+#Cypre Fix
+sealicedata$location[sealicedata$location == "Cypre "]<- "Cypre River"
+
+#North Meares Fix
+sealicedata$location[sealicedata$location == "Meares North"]<- "North Meares"
+
+#White Pine Fix
+sealicedata$location[sealicedata$location == "White Pine "]<- "White Pine"
+
+#Ritchie Bay Fix
+sealicedata$location[sealicedata$location == "Ritchie Bay "]<- "Ritchie Bay"
+
+#Tranquil Fix
+sealicedata$location[sealicedata$location == "Tranquil estuary"]<- "Tranquil Estuary"
+
+list(unique(sealicedata$location))
+
+
+#subset to adjust for year
+
+sealice.current <- sealicedata
+library(dplyr)
+sumTable <- sealice.current %>% group_by(location,year) %>% count(fish_id)
+bruh  <- data.frame(xtabs(n ~ year + location, sumTable))
+
+#bruh <- tidyr::pivot_wider(sumTable, names_from = location, values_from = n)
+
+colnames(bruh)
+#ggplot(bruh, aes(x=factor(location),y=Freq, fill=year, label=Freq))+
+geom_col(position=position_stack()) +labs(x="Location",y="Total Sum",fill = "Year",
+                                          title="Juvenile Salmon Examined from 2018 - 2021")+
+  theme_Publication()+  scale_fill_viridis_d(begin = 0.25, end = .95,direction = 1, option = "D")+     
+  geom_text(size = 3, position = position_stack(vjust = 0.5))
+####counts of fish analyzed by species
+colnames(sealicedata)
+
+#adjust for our focus species
+sealice.current <- sealice.current<-data.frame(subset(sealice.current,
+                                                      species == "coho"|species == "chum"|species == "chinook"|
+                                                        species == "sockeye"|species == "pink"))
+
+
+### END OF SET UP ###
+### ## ABUNDANCE ESTIMATES ## #####
+
+#Setting the cap for bootstrapping
+n.boot.b<-1000
+
+##ASSIGNING WEEKLY INTERVALS TO ALL THE dates in the abundance.base data set 
+#weekly intervals.
+#set up vectors to hold data
+
+#X#beginning abundance plots, start bye creating a list function. 
+#x#Start of Abundance Plot #1 for first Location in list
+#Then determine how long the list is and replicate the following code that many times, only changing the x in base.list[x,] below
+#you should replicate this whole code for every location sampled, unless there are not enough samples, rmeber each site needs a min of 30
+base.list <- data.frame(unique(sealice.current$location))
+list(base.list)
+#starting with the first river in the list, 1
+abundance.base<-subset(sealice.current, species == "chum" | species == "coho" | species == "chinook"| species == "sockeye" |species == "salmon")
+
+
+# 1
+####################################################################################################
+## Taking out the dates where less than 30 fish were caught
+## Creating a weekly interval column
+####################################################################################################
+a.b.prod <- data.frame(abundance.base[1,])
+a.b.prod <- a.b.prod[-1,]
+
+
+for(j in 1:nrow(base.list)){
+  
+  abundance.base<-data.frame(subset(sealice.current, location == base.list[j,]))
+  # Removing any dates with less than 30 fish
+  
+  
+  ## Making julian dates
+  abundance.base$date <- as.Date(with(abundance.base, paste(year, month, day, sep="-")), "%Y-%m-%d")
+  abundance.base$date  <- julian(abundance.base$date) 
+  datelist <-(abundance.base$date)
+  ## Making a new column for weeklyinterval dates
+  abundance.base$weeklyintvl<-rep(0, each = length(abundance.base$date))
+  
+  ## Finding the weekly intervals
+  value <- abundance.base$weeklyintvl
+  # all dates next to an empty column
+  dat <- data.frame(datelist, value)
+  # vector of all the unique dates
+  dates = unique(dat$date)
+  # vector for the number of rows for each date
+  count <- c()
+  
+  for(i in 1:length(dates)){
+    # length of the subset associated with each date
+    n <- length(which(dat$datelist == dates[i]))
+    # put the count into the empty vector
+    count[i] <- n
+  }
+  # each unique date has a count of it's rows (assuming each row is a fish)
+  output1 <- data.frame(dates, count)
+  
+  # Here you just turn dates into julian dates for ease later on
+  #cbind to as.date version
+  abundance.base$date <- as.Date(with(abundance.base, paste(year, month, day, sep="-")), "%Y-%m-%d")
+  datelist <-(abundance.base$date)
+  abundance.base$weeklyintvl<-rep(0, each = length(abundance.base$date))
+  value <- abundance.base$weeklyintvl
+  dat <- data.frame(datelist, value)
+  dates = unique(dat$date)
+  count <- c()
+  for(i in 1:length(dates)){
+    n <- length(which(dat$datelist == dates[i]))
+    count[i] <- n
+  }
+  output2 <- data.frame(dates, count)
+  
+  #cbind outputs
+  output.date <- cbind(output1,output2)
+  output.date = subset(output.date, select = -c(count))
+  
+  #subset to remove dates with less than 30 fish
+  remove.dates <- subset(output.date$dates.1, count < 30)
+  #remove.dates <- as.Date(subset(output.date$dates, count <30)
+  remove.dates <- data.frame(remove.dates)
+  #remove dates from main data
+  abundance.base$date  <- as.Date(abundance.base$date) 
+  require(lubridate)
+  class(remove.dates[,])
+  class(abundance.base$date)
+  list(remove.dates)
+  
+  #x# from the list above, input the dates into the filter function below by their column number
+  if(nrow(remove.dates)>0){
+    for(i in 1:nrow(remove.dates)){
+      abundance.base <- abundance.base %>%
+        filter(date != remove.dates[i,])#%>%
+      #filter(date != as.Date(remove.dates[2,])) 
+      #  filter(date != as.Date(remove.dates[,])) # unsure if this second line will cause problems
+    }
+  }
+  
+  #try <- abundance.base[(abundance.base$date != remove.dates[,]),]
+  remove.dates
+  unique(abundance.base$date)
+  a.b.prod <- rbind(a.b.prod,abundance.base)
+}
+abundance.base <- a.b.prod # this is redundant but was kept to work with the rest of the code which calls on abundance.base
+
+abundance.base <- subset(abundance.base, location == "North Meares" | location == "Ritchie Bay" | location == "Cypre River")
+
+speciestab <- abundance.base %>% group_by(year) %>% count(species)
+speciestab  <- data.frame(speciestab)
+
+
+
+# edited plot
+
+ggplot(speciestab, aes(x=factor(year),y=n, fill=species))+
+  geom_col(position=position_stack()) +labs(x="Year",y="Total Sum",fill = "Species",
+                                            title="Juvenile Salmon Analyzed from 2018 - 2021")+
+  theme_Publication()+  scale_fill_viridis_d(direction = 1, option = "D")
+
+
+ggsave(filename=paste(j,capexamplot, "Captured&ExaminedLice_Yearly", ".png", sep = "_"))
+
+}

@@ -279,6 +279,10 @@ a.b.prod <- data.frame(abundance.base[1,])
 a.b.prod <- a.b.prod[-1,]
 
 
+#VVV Trying to understand the function. Listing the processes:
+#Adjusting dates (Changing to Julian, isolating unique dates)(confused about the weekly intervals?
+#Maybe in the reading?). Why remove dates with <30 fish? 
+
 for(j in 1:nrow(base.list)){
   
   abundance.base<-data.frame(subset(sealice.current, location == base.list[j,]))
@@ -312,6 +316,7 @@ for(j in 1:nrow(base.list)){
   output1 <- data.frame(dates, count)
   
   # Here you just turn dates into julian dates for ease later on
+  # What's the purpose of turning into Julian dates? - ML
   #cbind to as.date version
   abundance.base$date <- as.Date(with(abundance.base, paste(year, month, day, sep="-")), "%Y-%m-%d")
   datelist <-(abundance.base$date)

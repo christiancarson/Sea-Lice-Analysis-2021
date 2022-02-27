@@ -52,7 +52,8 @@ figures.path <- paste(wd, "/", folders[3], sep = "")
 data.output.path <- paste(wd, "/", folders[4], sep = "")
 
 # our raw data is stored in different folders, lets make the paths
-sealicedata.path <- paste(wd, "/", "Data", sep = "")
+#changed the path - ML
+sealicedata.path <- paste(getwd(), "/", "Data", sep = "")
 
 # now we can access and save stuff to these folders!
 

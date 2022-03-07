@@ -1,0 +1,51 @@
+---
+title: "FInal Abundance Markdown"
+author: "Michael Lee"
+date: "07/03/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Working Directory}
+wd <- "/Users/user/Documents/GitHub/Sea-Lice-Analysis-2021"  #Suggest using wd <- getwd() -ML
+setwd(wd)
+getwd()
+folders <- c("Code", "Data", "OutputFigures", "OutputData")
+
+# function to create folders below
+for(i in 1:length(folders)){
+  if(file.exists(folders[i]) == FALSE)
+    dir.create(folders[i])
+}
+
+# we also need to store the paths to these new folders
+
+code.output.path <- paste(wd, "/", folders[1], sep = "")
+data.input.path <- paste(wd, "/", folders[2], sep = "")
+figures.path <- paste(wd, "/", folders[3], sep = "")
+data.output.path <- paste(wd, "/", folders[4], sep = "")
+
+# our raw data is stored in different folders, lets make the paths
+sealicedata.path <- paste(getwd(), "/Data", "/", sep = "")
+
+# now we can access and save stuff to these folders!
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

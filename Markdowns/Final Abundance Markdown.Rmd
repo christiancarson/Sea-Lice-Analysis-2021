@@ -13,8 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r Working Directory}
-wd <- "/Users/user/Documents/GitHub/Sea-Lice-Analysis-2021"  
+wd <- "~/Sea-Lice-Analysis-2021"  
 getwd()
+setwd(wd)
 folders <- c("Code", "Data", "OutputFigures", "OutputData")
 
 # function to create folders below
@@ -227,6 +228,12 @@ sealice.current$copsum<- as.numeric(sealice.current$copsum)
 sealice.current$chalsum<-as.numeric(sealice.current$chalsum)
 sealice.current$attachedsum<-as.numeric(sealice.current$attachedsum)
 sealice.current$sum_all_lice<-as.numeric(sealice.current$sum_all_lice)
+
+base.list <- data.frame(unique(sealice.current$location))
+list(base.list)
+#starting with the first river in the list, 1
+
+abundance.base<- sealice.current
 ```
 
 
@@ -753,15 +760,6 @@ abundance.base$sum_all_lice<-as.numeric(abundance.base$sum_all_lice)
 
 
 ```{r summary table}
-sumtable(abundance.base, group = "species",group.long = TRUE, vars = "sum_all_lice",
-         summ=c('notNA(x)',
-                'NA(x)',
-                'mean(x)',
-                'sd(x)',
-                'min(x)',
-                'max(x)',
-                'median(x)',
-                'sum(x)'))
 
 
 

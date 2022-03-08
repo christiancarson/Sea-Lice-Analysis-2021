@@ -54,13 +54,9 @@ sealicedata.path <- paste(getwd(), "/Data", "/", sep = "")
 
 #---------------------Below, we upload and clean the  data----------
 
-#x# time to upload the datas into folder (Not 100% reproducible, trying to fix now - ML)
+#x# time to upload the datas into folder 
 sealicedata <- read.csv(paste(sealicedata.path, "CCFS_SeaLice_Monitoring_2021.csv",
                               sep = ""), stringsAsFactors = FALSE)
-
-
-## ^^^ What I changed here is I switched out wd cmd for getwd() in sealicedata.path.
-## This is because wd follows a set path on an individual computer, so is not reproducible
 
 
 
@@ -108,7 +104,7 @@ names(sealicedata)[1]<-paste("fish_id")
 sealicedata$sum_all_lice[is.na(sealicedata$sum_all_lice)]<-0
 
 
-#Don't have a lot of experience in dplyr. - ML
+
 sealicedata <- sealicedata %>% rowwise() %>%
   dplyr::mutate(sum_all_lice = sum(c_across(Lep_cope:unid_adult)))
 
@@ -198,7 +194,7 @@ list(unique(sealicedata$location))
 
 #X#change year to current
 
-
+#Add a line here to subset for year - ML
 
 #subset to adjust for year
 
@@ -209,8 +205,8 @@ sealice.current<-sealicedata
 length(unique(sealice.current$location))
 
 #adjust for our focus species
-sealice.current <- sealice.current<-data.frame(subset(sealice.current,
-                                                      species == "chum"))
+sealice.current <- data.frame(subset(sealice.current,
+                                     species == "chum"))
 
 salmcounts <- sealice.current %>%
   select( Lep_cope, chalA, chalB, Lep_PAmale, Lep_PAfemale, Lep_male,

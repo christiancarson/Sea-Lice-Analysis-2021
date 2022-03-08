@@ -777,10 +777,10 @@ names(weeksitelice)<-paste(c("date", "j.date", "weeklyintvl", "location", "copsu
 ```
 Outputs a table with the mean, median, min, max counts of the sum_all_lice column. 
 
-## 
+## Plot Function
 
 Subsets with forloops. It wants to calculate the abundance of each species at each site. It subsets for site, species, weekly interval, louse stage. It creates a weekly interval csv file for each site, as well as a plot for each site. 
-```{r}
+```{r Plot Function}
 for (ll in 1:nrow(base.list)){
   setwd(wd)
   # the site to focus on.
@@ -928,13 +928,3 @@ for (ll in 1:nrow(base.list)){
 }
 ```
 
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

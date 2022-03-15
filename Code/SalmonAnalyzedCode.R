@@ -193,7 +193,7 @@ list(unique(sealicedata$location))
 
 
 #subset to adjust for year
-
+#grouping data for a table of sums
 sealice.current <- sealicedata
 library(dplyr)
 sumTable <- sealice.current %>% group_by(location,year) %>% count(fish_id)

@@ -101,6 +101,9 @@ tsaltemp$temp_1m<-as.numeric(as.character(tsaltemp$temp_1m))
 tsaltemp$date<-as.Date(tsaltemp$date, origin ="%Y-%m-%d")
 year <- yr
 
+#Makes a dataframe of the averages of temperature and salinity. No julian dates
+#without weekly interval. There are 2 averages (0m + 1m). 
+
 for (d in 1:length(tsalsites)) {
   
   temptsal<-subset(tsaltemp, location == tsalsites[d])
@@ -128,6 +131,8 @@ for (d in 1:length(tsalsites)) {
   if(d == 1) {tsdframe <- as.data.frame(tsd.site1)
   } else if(d > 1 ){tsdframe <- as.data.frame(rbind(tsdframe, tsd.site1))}
 }
+#Subset by the date which will have multiple sites. If you want to understand the oceanography of
+#each site, so if you averaging over all the individual sites, you do get information about the region as a whole over time.
 
 tsaltemp$salmon_captured[is.na(tsaltemp$salmon_captured)]<-0
 tsaltemp$salmon_examined[is.na(tsaltemp$salmon_examined)]<-0

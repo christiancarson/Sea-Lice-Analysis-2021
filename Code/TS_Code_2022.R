@@ -196,15 +196,15 @@ for(i in 1 : length(tsalsites)){
   
 }
 
-  legend("bottom", legend = c("Sal 1 m","Sal 0 m", "Temp 1 m","Temp 0 m"),
-         col = c("#39558CFF", "#238A8DFF", "#56C667FF", "#DCE318FF"), cex = 1.5,box.lwd = "o",
-         lwd = 1.75, title = "Depth", lty = c(1,2,3,4), pch = c(15, 16, 17, 18), ncol=4)
+ # legend("bottom", legend = c("Sal 1 m","Sal 0 m", "Temp 1 m","Temp 0 m"),
+  #       col = c("#39558CFF", "#238A8DFF", "#56C667FF", "#DCE318FF"), cex = 1.5,box.lwd = "o",
+   #      lwd = 1.75, title = "Depth", lty = c(1,2,3,4), pch = c(15, 16, 17, 18), ncol=4)
   
   
 
 #RM : you shouldn't need the code between these hashtags
 
-  
+  _Temp_Salinity_by_sample_date
   #Ritchie check
   unique(tsaltemp$Site.ID)
   ritch <- subset(tsaltemp, tsaltemp$location == "Ritchie Bay")

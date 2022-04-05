@@ -106,7 +106,8 @@ year <- yr
 ```
 
 ## Function
-The function subsets by the date, which will have multiple sites. This is 
+The function subsets by the date, which will have multiple sites. Each site also 
+has multiple seines.This is 
 important if you want to understand the oceanography of each site. This is 
 because if you are averaging over all the individual sites, you get information 
 about the region as a whole over time.
@@ -150,8 +151,8 @@ wd <-  "/Users/user/Desktop/Sea-Lice-Analysis-2021/OutputFigures/TS plots"
   view(tsaltemp)
 
 ```
-The function is taking the temperature and salinity averages in a specific
-location, Ritchie Bay. 
+The function is taking the temperature and salinity averages for each site and date,
+and creating a plot.
 ```{r Function 2}
 for(i in 1 : length(tsalsites)){
   

@@ -999,3 +999,10 @@ totals2021<-data.frame(mean.prev = numeric(0), sd.prev = numeric(0), se.prev = n
 totals2021[1,1:3]<-c(mean(twoone$total.prevalence), sd(twoone$total.prevalence), 
                      sd(twoone$total.prevalence)/sqrt(length(twoone$Group.date)))
 
+<<<<<<< Updated upstream
+=======
+
+view(totals2021)
+
+t.test()
+>>>>>>> Stashed changes

@@ -80,7 +80,7 @@ library(arsenal)
 #pacman::p_load(tidyverse,nlme,emmans,here)
 #pacman::p_load(ggthemes, ggplot2)
 
-#source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/ggplot_theme_Publication-2.R")
+source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/ggplot_theme_Publication-2.R")
 
 
 warnings()
@@ -672,6 +672,7 @@ unique(chum$species)
 ####cbind all the species subs together
 
 abundance.base <- rbind(chum,chinook,coho)
+abundance.base <- chum
 
 colnames(abundance.base)
 check <- abundance.base %>% group_by(date,location,species) %>% 
@@ -1044,13 +1045,89 @@ totals2021[1,1:11]<-c(mean(twoone$copsum), mean(twoone$chalsum), mean(twoone$mot
 
 totals2019to2021 <- rbind(totals2019,totals2020,totals2021)
 
-view(totals2019to2021)
+t.test(twozero$sum_all_lice, mu = 4.111
+)
+
+row.1 <- as.data.frame(c(2019,2020,2021))
+
+totals2019to2021 <- cbind(row.1,totals2019to2021)
+colnames(totals2019to2021)
+
+totals <- totals2019to2021
+
+colnames(totals)
+colnames(totals)[which(names(totals) == "mean.mot")] <- "Mean Motile"
+
+colnames(totals)[which(names(totals) == "mean.cop")] <- "Mean Copepodid"
+
+colnames(totals)[which(names(totals) == "mean.chal")] <- "Mean Chalimus"
+
+colnames(totals)[which(names(totals) == "mean.tot")] <- "Mean All Lice"
+
+colnames(totals)[which(names(totals) == "se.cop")] <- "SE Copepodid"
+
+colnames(totals)[which(names(totals) == "se.mot")] <- "SE Motile"
+
+colnames(totals)[which(names(totals) == "se.chal")] <- "SE Chalimus"
+
+colnames(totals)[which(names(totals) == "se.tot")] <- "SE All Lice"
+
+
+colnames(totals)[which(names(totals) == "c(2019, 2020, 2021)")] <- "Year"
+
+library(dplyr)
+
+MeanTotals <- totals %>% select(`Year`,`Mean Motile`, `Mean Copepodid`, `Mean Chalimus`,`Mean All Lice`)  
+SETotals <- totals %>% select(`Year`,`SE Motile`, `SE Copepodid`, `SE Chalimus`,`SE All Lice`)  
+
+
+#reshape
+
+require(reshape2)
+MeanTotals <- tidyr::pivot_longer(MeanTotals, cols=c("Mean Motile","Mean Copepodid","Mean Chalimus", "Mean All Lice"), names_to='Stage', 
+                                values_to="value")
+SETotals <- tidyr::pivot_longer(SETotals, cols=c("SE Motile","SE Copepodid","SE Chalimus","SE All Lice"), names_to='variable2',
+                                  values_to="value2")
+Totality <- as.data.frame(cbind(MeanTotals,SETotals))
+
+View(Totality)
+
+Totality$Year <- factor(Totality$Year, c("2019","2020","2021"))
+
+View(Totality)
+
+Totality <- Totality[ -c(4) ]
+
+head(Totality)
+colnames(Totality)
+ggplot(data = Totality, aes(x=Year, y=value, fill=Stage)) + 
+  geom_bar(stat = 'identity', position = 'dodge')+
+  labs(x = "Year", y = "Mean Abundance") + 
+  geom_errorbar(data = Totality,aes(ymin=value-value2, ymax=value+value2), position=position_dodge(.9), width=0.1)+
+  theme(axis.text=element_text(size=14),
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 45, vjust = 0.8, hjust = .9, color = "black"),
+        axis.text.y=element_text(color="black"))+ theme_Publication()+
+  scale_fill_viridis_d(direction = -1,begin = 0.15, end = .85)+ ggtitle("Seasonal Average Lice per Fish by Louse Stage") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+  #geom_hline(yintercept=c(1.5,3), linetype="dotted")
+
+
+rlang::last_error()
+
+rlang::last_trace()
 
 
 
-ok <- abundance.base %>% group_by(species,year) %>% 
-  summarize(mean = mean(sum_all_lice))
-view(ok)
+site.compare %>%
+  ggplot(aes(x=year,y=mean, fill=location))+
+  geom_col(position = position_dodge2(width = 0.9, preserve = "single")) + labs(x = "Year", y = "Average Lice Per Fish") + 
+  theme_Publication()+
+  scale_fill_viridis_d(direction = -1,begin = 0.15, end = .85)+ ggtitle("Seasonal Average Lice per Fish by Sample Site") +
+  theme(plot.title = element_text(hjust = 0.5))+scale_x_continuous(breaks=seq(2019,2021,1)) 
+  #geom_hline(yintercept=c(1.5,3), linetype="dotted")
+
+
 
 bruh <- mainsites %>% filter_at(vars("sum_all_lice"), any_vars(. >= 1))
 sum(bruh$sum_all_lice)
@@ -1064,4 +1141,9 @@ sumtable(mainsites, group = "year",group.long = TRUE, vars = "sum_all_lice",
                 'min(x)',
                 'max(x)',
                 'median(x)',
-                'sum(x>=1)'))
+                'sum(x>1)'))
+
+t.test(totals2019to2021$mean.tot)
+
+unique(abundance.base$species)
+?t.test

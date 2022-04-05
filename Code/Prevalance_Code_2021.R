@@ -667,7 +667,6 @@ abundance.base <- rbind(chum,chinook,coho)
 colnames(abundance.base)
 check <- abundance.base %>% group_by(date,location,species) %>% 
   summarize(Captures = sum(notNA(fish_id)))
-view(check)
 
 
 #####YEAR SWITCH!!!1!!@@@@######
@@ -897,7 +896,7 @@ nloop<-length(listofsites)
 #RM : trying to make the legend appear outside the plot so it doesn't get overlapped by data
 
 for (i in 1:nloop) {
-  par(mfrow=c(1,1))
+  par(mfrow = c(2,1), mar = c(4,4,1,1), oma=c(2,2,2,2))
   site3<-subset(abundance.base, location == listofsites[i]) 
   #this gives you an individual site to work with.
   #optional subset for chum. Subsetting for chinook and coho might be ok, but probably very low numbers.
@@ -981,14 +980,14 @@ for (i in 1:nloop) {
   prevsiteday<-rbind(prevsiteday, siteagg3)
   library(vtable)
   st(siteagg3, group = "Group.date",group.long = TRUE, vars = "total.prevalence", title = listofsites[i])
-}
+  setwd(figures.path)
+  ggsave(filename=paste(j, listofsites[i], "_Prevalence_by_sample_date", ".png", sep = "_"))
+  }
 colnames(siteagg3)
 
-legend("bottom", legend = c("chalimus","copepodid", "motile","total"),
+#legend("bottomright", legend = c("chalimus","copepodid", "motile","total"),
        col = c("#B8DE29FF", "#3CBC75FF", "#238A8DFF", "#39558CFF"), cex = 1.5,box.lwd = "o",
-       lwd = 1.75, title = "Depth", lty = c(linetype[3],linetype[4],linetype[2],linetype[1]), pch = c(plotchar[3],plotchar[4],plotchar[2],plotchar[1]), ncol=4)
-
-
+       lwd = 1, title = "Louse Life Stage", lty = c(linetype[3],linetype[4],linetype[2],linetype[1]), pch = c(plotchar[3],plotchar[4],plotchar[2],plotchar[1]), ncol=4, xpd=NA)
 
 
 twoone <- subset(prevsiteday, site == "Cypre River"| site == "North Meares" | site == "Ritchie Bay") 
@@ -1000,5 +999,3 @@ totals2021<-data.frame(mean.prev = numeric(0), sd.prev = numeric(0), se.prev = n
 totals2021[1,1:3]<-c(mean(twoone$total.prevalence), sd(twoone$total.prevalence), 
                      sd(twoone$total.prevalence)/sqrt(length(twoone$Group.date)))
 
-
-view(totals2021)
